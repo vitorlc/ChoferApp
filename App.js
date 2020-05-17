@@ -1,114 +1,96 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
-import React from 'react';
+import React, {useState, useEffect, Component} from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
-  ScrollView,
+  ToastAndroid,
   View,
   Text,
-  StatusBar,
+  FlatList
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import { Button, Header} from 'react-native-elements'
 
-const App: () => React$Node = () => {
+import RNBluetoothClassic, {
+  BTEvents,
+  BTCharsets,
+} from 'react-native-bluetooth-classic';
+
+const Device = ({title, disabled, onPress}) => {
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+    <View style={styles.item}>
+      <Button disabled={disabled} title={title} onPress={onPress} />
+    </View>
+  )
+}
+
+
+const App = () => {
+  const [deviceList, setDeviceList] = useState([])
+  const [device, setDevice] = useState({})
+  const [listDisabled, setListDisabled] = useState(false)
+  
+  async function initialize() {
+    try {
+      let deviceList = await RNBluetoothClassic.list();
+      console.log("deviceList ->", deviceList)
+      setDeviceList(deviceList)
+    } catch (err) {
+      console.log(err.message)
+    }
+  }
+
+  async function selectDevice(){
+    try {
+      let connectedDevice = await RNBluetoothClassic.connect(deviceId);
+      console.log("connectedDevice ->", connectedDevice)
+      setDevice({connectedDevice});
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  
+  return (
+    <View style={styles.body}>
+      <Header
+        centerComponent={{ text: 'Chofer App', style: { color: '#fff', fontWeight: 'bold' , fontSize:20} }}
+        containerStyle={{
+          backgroundColor: '#78bc6d',
+          justifyContent: 'space-around',
+        }}
+      />
+      <View style={styles.container}>
+
+        <Button
+          onPress={initialize}
+          title="Listar Dispositivos"
+        >
+        </Button>
+        <FlatList
+          data={deviceList}
+          renderItem={({ item }) => <Device title={item.name} />}
+          keyExtractor={item => item.id}
+          onPress={() => selectDevice(item)}
+          />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
   body: {
-    backgroundColor: Colors.white,
+    backgroundColor: "#FFF",
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    justifyContent:'center',
+    alignItems:'center'
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
+  text: {
+    fontWeight: 'bold',
+    color: '#FFF',
+    fontSize: 20
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+  item: {
+    paddingTop: 5
+  }
 });
 
 export default App;
