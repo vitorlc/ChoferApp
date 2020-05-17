@@ -4,11 +4,13 @@ import {
   StyleSheet,
   ToastAndroid,
   View,
+  SafeAreaView,
   Text,
   FlatList
 } from 'react-native';
 
 import { Button, Header} from 'react-native-elements'
+import { Icon } from "react-native-elements";
 
 import RNBluetoothClassic, {
   BTEvents,
@@ -23,6 +25,18 @@ const Device = ({title, disabled, onPress}) => {
   )
 }
 
+const MyIconComponent = ({iconName, onPress}) =>{
+  console.log("MyIconComponent -> onPress", onPress)
+  return (
+    <View>
+      <Icon
+        name={iconName}
+        color='#fff' 
+        onPress={onPress}
+        />
+    </View>
+  )
+}
 
 const App = () => {
   const [deviceList, setDeviceList] = useState([])
@@ -111,10 +125,13 @@ const App = () => {
   }
   
   return (
-    <View style={styles.body}>
+    <SafeAreaView style={styles.body}>
       <Header
-        centerComponent={{ text: 'Chofer App', style: { color: '#fff', fontWeight: 'bold' , fontSize:20} }}
+        leftComponent={<MyIconComponent iconName='menu'/>}
+        centerComponent={{ text: 'Chofer App', style: { color: '#fff', fontWeight: 'bold' , fontSize:30} }}
+        rightComponent={<MyIconComponent iconName='bluetooth' onPress={() =>  initialize()}/>}
         containerStyle={{
+          height: 70,
           backgroundColor: '#78bc6d',
           justifyContent: 'space-around',
         }}
@@ -122,11 +139,6 @@ const App = () => {
       <View style={styles.container}>
         {listEnable ? (
           <View>
-            <Button
-              onPress={initialize}
-              title="Listar Dispositivos"
-            >
-            </Button>
             <FlatList
               data={deviceList}
               renderItem={({ item }) => 
@@ -138,7 +150,11 @@ const App = () => {
               
               />
           </View>
-        ) : null}
+        ) : (
+          <View style={styles.warning}>
+            <Text>Nenhum Dispositivo Encontrado</Text>
+          </View>
+        )}
         {device ? (
           <View>
             <Button
@@ -149,17 +165,22 @@ const App = () => {
           </View>
         ): null}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   body: {
-    backgroundColor: "#FFF",
+    flex: 1,
+    alignItems:'center',
+    justifyContent:'space-between',
   },
   container: {
+  },
+  warning: {
+    color:"#808080",
+    alignItems:'center',
     justifyContent:'center',
-    alignItems:'center'
   },
   text: {
     fontWeight: 'bold',
