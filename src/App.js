@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ToastAndroid, View, SafeAreaView, Text, FlatList } from 'react-native';
+import { StyleSheet, ToastAndroid, View, SafeAreaView, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Icon, Button, Header } from 'react-native-elements'
 
 import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic';
-import { Buffer } from 'buffer'
 
-import PIDS from './src/services/odbinfo';
+import Padrao from './styles/default'
 
-const Device = ({ title, disabled, onPress }) => {
+import PIDS from './services/odbinfo';
+import bluetooth from './services/bluetooth';
+import obd from './services/obd';
+
+
+const Device = ({ device, onPress, style}) => {
+  let bgColor = device.connected
+          ? '#0f0'
+          : '#ccc';
   return (
-    <View style={styles.item}>
-      <Button disabled={disabled} title={title} onPress={onPress} />
-    </View>
-  )
-}
-
-const MyIconComponent = ({ iconName, onPress }) => {
-  console.log("MyIconComponent -> onPress", onPress)
-  return (
-    <View>
-      <Icon
-        name={iconName}
-        color='#fff'
-        onPress={onPress}
+    <TouchableOpacity
+      key={device.id}
+      style={[styles.button, style]}
+      onPress={onPress}>
+      <View
+        style={[styles.connectionStatus, {backgroundColor: bgColor}]}
       />
-    </View>
+      <View style={{flex: 1}}>
+        <Text style={styles.deviceName}>{device.name}</Text>
+        <Text>{device.address}</Text>
+      </View>
+    </TouchableOpacity>
   )
 }
 
@@ -34,55 +37,48 @@ const App = () => {
   const [listEnable, setListEnable] = useState(false)
   const [readValue, setReadValue] = useState([]);
 
-  const reset = true
-  var queue = [];
-
   useEffect(() => {
-
-
     return (() => {
       this.onRead.remove();
       clearInterval(this.poll);
       RNBluetoothClassic.disconnect();
     })
-
-
   }, [])
 
   pollForData = async () => {
-    var available = 0;
+    let available = 0;
     do {
-      console.log('Checking for available data');
-      available = await RNBluetoothClassic.available();
-      console.log(`There are ${available} bytes of data available`);
+      console.log('Checando por resposta...');
+      available = bluetooth.avaible()
+      console.log(`${available} bytes de data disponivel`);
 
       if (available > 0) {
-        console.log('Attempting to read the next message from the device');
-        const data = await RNBluetoothClassic.readFromDevice();
+        console.log('Lendo do dispositivo...');
+        let data = await bluetooth.read()
 
         console.log(data);
-        this.handleRead(data);
+        obd.handleData(data)
       }
     } while (available > 0);
   };
 
   function writeValue(type) {
     if (type == 'reset') {
-      write('ATZ');
+      bluetooth.write('ATZ');
       //Turns off extra line feed and carriage return
-      write('ATL0');
+      bluetooth.write('ATL0');
       //This disables spaces in in output, which is faster!
-      write('ATS0');
+      bluetooth.write('ATS0');
       //Turns off headers and checksum to be sent.
-      write('ATH0');
+      bluetooth.write('ATH0');
       //Turns off echo.
-      write('ATE0');
+      bluetooth.write('ATE0');
       //Turn adaptive timing to 2. This is an aggressive learn curve for adjusting the timeout. Will make huge difference on slow systems.
-      write('ATAT2');
+      bluetooth.write('ATAT2');
       //Set timeout to 10 * 4 = 40msec, allows +20 queries per second. This is the maximum wait-time. ATAT will decide if it should wait shorter or not.
       //self.write('ATST0A');
       //http://www.obdtester.com/elm-usb-commands
-      write('ATSP0');
+      bluetooth.write('ATSP0');
 
     } else {
       this.onRead = RNBluetoothClassic.addListener(
@@ -91,17 +87,16 @@ const App = () => {
         this,
       )
 
-      setInterval(()=> write('010C'), 150)
-       //RPM
-
+      setInterval(()=> bluetooth.write('010C'), 200) //RPM
+      
       this.poll = setInterval(() => this.pollForData(), 1500);
     }
   }
 
-  async function initialize() {
+  async function listDevices() {
     try {
-      let deviceList = await RNBluetoothClassic.list();
-      console.log("deviceList ->", deviceList)
+      let deviceList = await bluetooth.listDevices()
+      console.log("listDevices -> deviceList", deviceList)
       setListEnable(true)
       setDeviceList(deviceList)
     } catch (err) {
@@ -110,8 +105,9 @@ const App = () => {
   }
 
   async function selectDevice(device) {
+    console.log("selectDevice -> device", device)
     try {
-      let connectedDevice = await RNBluetoothClassic.connect(device.id);
+      let connectedDevice = await bluetooth.connectDevice(device.id);
       ToastAndroid.show(`Conectado ao ${connectedDevice.name} com sucesso!`, 3000)
       setListEnable(false)
 
@@ -126,9 +122,9 @@ const App = () => {
   return (
     <SafeAreaView style={styles.body}>
       <Header
-        leftComponent={<MyIconComponent iconName='menu' />}
-        centerComponent={{ text: 'Chofer App', style: { color: '#fff', fontWeight: 'bold', fontSize: 30 } }}
-        rightComponent={<MyIconComponent iconName='bluetooth' onPress={() => initialize()} />}
+        placement="left"
+        centerComponent={{ text: 'Chofer App', style: { color: Padrao.color_1.color, fontWeight: 'bold', fontSize: 30 } }}
+        rightComponent={<Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />}
         containerStyle={{
           height: 70,
           backgroundColor: '#78bc6d',
@@ -142,7 +138,7 @@ const App = () => {
               data={deviceList}
               renderItem={({ item }) =>
                 <Device
-                  title={item.name}
+                  device={item}
                   onPress={() => selectDevice(item)}
                 />}
               keyExtractor={item => item.id}
@@ -166,32 +162,31 @@ const App = () => {
 const styles = StyleSheet.create({
   body: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
     borderColor: '#DDD',
     borderRadius: 8,
-    margin: 40
+    margin: 10
   },
-  warning: {
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: "#808080",
+  button: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'stretch',
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
-  text: {
-    fontWeight: 'bold',
-    color: '#FFF',
-    fontSize: 20
+  deviceName: {
+    fontSize: 16,
   },
-  peso: {
-    fontWeight: 'bold',
-    fontSize: 40
-  },
-  item: {
-    paddingTop: 5
+  connectionStatus: {
+    width: 8,
+    backgroundColor: '#ccc',
+    marginRight: 16,
+    marginTop: 8,
+    marginBottom: 8,
   }
 });
 
