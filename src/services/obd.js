@@ -1,37 +1,38 @@
+import PIDS from './odbinfo.js'
+let receivedData = ""
 const obd = {
     handleData(data) {
 
-        // var currentString, arrayOfCommands;
-        // currentString = receivedData + data.toString('utf8'); // making sure it's a utf8 string
+        var currentString, arrayOfCommands;
+        currentString = receivedData + data.toString('utf8'); // making sure it's a utf8 string
 
-        // arrayOfCommands = currentString.split('>');
+        arrayOfCommands = currentString.split('>');
 
-        // var forString;
-        // if (arrayOfCommands.length < 2) {
-        //     receivedData = arrayOfCommands[0];
-        // } else {
-        //     for (var commandNumber = 0; commandNumber < arrayOfCommands.length; commandNumber++) {
-        //         forString = arrayOfCommands[commandNumber];
-        //         if (forString === '') {
-        //             continue;
-        //         }
+        var forString;
+        if (arrayOfCommands.length < 2) {
+            receivedData = arrayOfCommands[0];
+        } else {
+            for (var commandNumber = 0; commandNumber < arrayOfCommands.length; commandNumber++) {
+                forString = arrayOfCommands[commandNumber];
+                if (forString === '') {
+                    continue;
+                }
 
-        //         var multipleMessages = forString.split('\r');
-        //         for (var messageNumber = 0; messageNumber < multipleMessages.length; messageNumber++) {
-        //             var messageString = multipleMessages[messageNumber];
-        //             if (messageString === '') {
-        //                 continue;
-        //             }
-        //             var reply;
-        //             reply = parseOBDCommand(messageString);
-        //             console.log('reply>', reply)
-        //             receivedData = '';
-        //         }
-        //     }
-        // }
+                var multipleMessages = forString.split('\r');
+                for (var messageNumber = 0; messageNumber < multipleMessages.length; messageNumber++) {
+                    var messageString = multipleMessages[messageNumber];
+                    if (messageString === '') {
+                        continue;
+                    }
+                    var reply;
+                    reply = this.parseOBDCommand(messageString);
+                    console.log(">>", reply )
+                    receivedData = '';
+                }
+            }
+        }
     },
     parseOBDCommand(hexString) {
-        console.log("parseOBDCommand -> hexString", hexString)
         var reply,
             byteNumber,
             valueArray; //New object

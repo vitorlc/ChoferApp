@@ -48,21 +48,24 @@ const App = () => {
   pollForData = async () => {
     let available = 0;
     do {
-      console.log('Checando por resposta...');
-      available = bluetooth.avaible()
-      console.log(`${available} bytes de data disponivel`);
+      available = await bluetooth.avaible()
 
       if (available > 0) {
-        console.log('Lendo do dispositivo...');
         let data = await bluetooth.read()
 
-        console.log(data);
+        console.log("\n=== DATA ===")
+        // console.log(data);
         obd.handleData(data)
       }
     } while (available > 0);
   };
 
   function writeValue(type) {
+    this.onRead = RNBluetoothClassic.addListener(
+      BTEvents.READ,
+      this.handleRead,
+      this,
+    )
     if (type == 'reset') {
       bluetooth.write('ATZ');
       //Turns off extra line feed and carriage return
@@ -78,22 +81,16 @@ const App = () => {
       //Set timeout to 10 * 4 = 40msec, allows +20 queries per second. This is the maximum wait-time. ATAT will decide if it should wait shorter or not.
       //self.write('ATST0A');
       //http://www.obdtester.com/elm-usb-commands
-      bluetooth.write('ATSP0');
-
+      bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
     } else {
-      this.onRead = RNBluetoothClassic.addListener(
-        BTEvents.READ,
-        this.handleRead,
-        this,
-      )
-
-      setInterval(()=> bluetooth.write('010C'), 200) //RPM
+      setInterval(()=> bluetooth.write('010C'), 1500) //RPM
       
       this.poll = setInterval(() => this.pollForData(), 1500);
     }
   }
 
   async function listDevices() {
+    console.log("\n=== LISTANDO DISPOSITIVOS ===")
     try {
       let deviceList = await bluetooth.listDevices()
       console.log("listDevices -> deviceList", deviceList)
@@ -105,7 +102,8 @@ const App = () => {
   }
 
   async function selectDevice(device) {
-    console.log("selectDevice -> device", device)
+    console.log("\n=== SELECIONANDO DISPOSITIVO ===")
+    console.log(device)
     try {
       let connectedDevice = await bluetooth.connectDevice(device.id);
       ToastAndroid.show(`Conectado ao ${connectedDevice.name} com sucesso!`, 3000)

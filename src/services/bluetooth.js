@@ -12,7 +12,7 @@ const bluetooth = {
 
     async listDevices() {
         try {
-            await RNBluetoothClassic.setEncoding(BTCharsets.UTF8); // TESTAR MUDANÇA
+            // await RNBluetoothClassic.setEncoding(); // TESTAR MUDANÇA
             // BTCharsets: {
             //     LATIN,
             //     ASCII,
@@ -32,7 +32,7 @@ const bluetooth = {
     },
 
     async write(message) {
-        await RNBluetoothClassic.write(message)
+        await RNBluetoothClassic.write(message+ '\r')
     },
 
     async read() {
