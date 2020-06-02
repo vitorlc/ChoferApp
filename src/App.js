@@ -1,29 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ToastAndroid, View, SafeAreaView, Text, FlatList, TouchableOpacity } from 'react-native';
-import { Icon, Button, Header } from 'react-native-elements'
+import {
+  StyleSheet,
+  ToastAndroid,
+  View,
+  SafeAreaView,
+  Text,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import {
+  Icon,
+  Button,
+  Header,
+} from 'react-native-elements'
 
 import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic';
 
 import Padrao from './styles/default'
 
-import PIDS from './services/odbinfo';
+import PIDS from './services/pids';
 import bluetooth from './services/bluetooth';
 import obd from './services/obd';
 
 
-const Device = ({ device, onPress, style}) => {
+const Device = ({ device, onPress, style }) => {
   let bgColor = device.connected
-          ? '#0f0'
-          : '#ccc';
+    ? '#0f0'
+    : '#ccc';
   return (
     <TouchableOpacity
       key={device.id}
       style={[styles.button, style]}
       onPress={onPress}>
       <View
-        style={[styles.connectionStatus, {backgroundColor: bgColor}]}
+        style={[styles.connectionStatus, { backgroundColor: bgColor }]}
       />
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <Text style={styles.deviceName}>{device.name}</Text>
         <Text>{device.address}</Text>
       </View>
@@ -36,6 +48,11 @@ const App = () => {
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
   const [readValue, setReadValue] = useState([]);
+
+
+  let lastIndex = 0;
+  let total = PIDS.length - 1;
+  let subs = []
 
   useEffect(() => {
     return (() => {
@@ -53,9 +70,10 @@ const App = () => {
       if (available > 0) {
         let data = await bluetooth.read()
 
+        let reply = obd.parse(data)
         console.log("\n=== DATA ===")
-        // console.log(data);
-        obd.handleData(data)
+        console.log(reply);
+        setReadValue([reply])
       }
     } while (available > 0);
   };
@@ -83,9 +101,22 @@ const App = () => {
       //http://www.obdtester.com/elm-usb-commands
       bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
     } else {
-      setInterval(()=> bluetooth.write('010C'), 1500) //RPM
-      
-      this.poll = setInterval(() => this.pollForData(), 1500);
+
+
+      setInterval(() => {
+
+        bluetooth.write(PIDS[lastIndex].pid)
+
+        if (lastIndex == total) {
+          lastIndex = 0;
+        } else {
+          lastIndex = lastIndex + 1;
+        }
+      }, 1000)
+
+      // setInterval( ()=> bluetooth.write('010C'), 1500)
+
+      this.poll = setInterval(() => this.pollForData(), 1000);
     }
   }
 
@@ -150,7 +181,16 @@ const App = () => {
               onPress={() => writeValue(null)}
               title="COMEÇAR LEITURA"
             ></Button>
+
+            {
+              readValue.map((value, index)=> {
+                return (
+                  <Text key={index}>{value.name} : {value.value} </Text>
+                )
+              })
+            }
           </View>
+
         ) : null}
       </View>
     </SafeAreaView>
