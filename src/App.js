@@ -47,7 +47,7 @@ const App = () => {
   const [deviceList, setDeviceList] = useState([])
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
-  const [readValue, setReadValue] = useState([]);
+  const [readValue, setReadValue] = useState([{name: '', vale: ''}]);
 
 
   let lastIndex = 0;
@@ -73,7 +73,7 @@ const App = () => {
         let reply = obd.parse(data)
         console.log("\n=== DATA ===")
         console.log(reply);
-        setReadValue([reply])
+        setReadValue([{...reply}])
       }
     } while (available > 0);
   };
@@ -116,7 +116,21 @@ const App = () => {
 
       // setInterval( ()=> bluetooth.write('010C'), 1500)
 
-      this.poll = setInterval(() => this.pollForData(), 1000);
+      this.poll = setInterval(() => this.pollForData(), 500);
+    }
+  }
+
+  async function listUnpairedDevices() {
+    console.log("\n=== LISTANDO DISPOSITIVOS NÃO PAREADOS===")
+    try {
+      let deviceList = await bluetooth.listUnpairedDevices()
+      if(deviceList){
+        writeValue('reset')
+        setDevice(true)
+        setListEnable(false)
+      }
+    } catch (err) {
+      console.log(err.message)
     }
   }
 
@@ -153,7 +167,12 @@ const App = () => {
       <Header
         placement="left"
         centerComponent={{ text: 'Chofer App', style: { color: Padrao.color_1.color, fontWeight: 'bold', fontSize: 30 } }}
-        rightComponent={<Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />}
+        rightComponent={
+          <View>
+            <Icon name='rowing' color='#fff' onPress={() => listUnpairedDevices()} />
+            <Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />
+          </View>
+        }
         containerStyle={{
           height: 70,
           backgroundColor: '#78bc6d',
@@ -184,6 +203,7 @@ const App = () => {
 
             {
               readValue.map((value, index)=> {
+              console.log("value", value)
                 return (
                   <Text key={index}>{value.name} : {value.value} </Text>
                 )

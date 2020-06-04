@@ -9,7 +9,26 @@ var receivedData = "";
 var protocol = '0';
 
 const bluetooth = {
-
+    async listUnpairedDevices () {
+        try {
+            let unpaired = await RNBluetoothClassic.discoverDevices();
+                for (let device of unpaired){
+                    if (device.extra.name == "OBDII") {
+                        await RNBluetoothClassic.pairDevice(device.address).then(result => {
+                            if (result) return true
+                            return false
+                        }).catch(e => console.log(e))
+                    
+                    }
+                    else {
+                        console.log("OBD não encontrado")
+                    }
+    
+                }
+        } catch (error) {
+            
+        }
+    },
     async listDevices() {
         try {
             // await RNBluetoothClassic.setEncoding(); // TESTAR MUDANÇA
@@ -19,7 +38,7 @@ const bluetooth = {
             //     UTF8,
             //     UTF16
             //   }
-            const deviceList = await RNBluetoothClassic.list();
+            const deviceList = await RNBluetoothClassic.list()
             return deviceList
         } catch (err) {
             console.log(err.message)
