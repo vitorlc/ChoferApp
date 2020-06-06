@@ -1,5 +1,5 @@
 import PIDS from './pids.js'
-// let receivedData = ""
+
 const obd = {
     parse(raw) {
         let lines = this.rawLines(raw);
@@ -9,8 +9,8 @@ const obd = {
         if(lines.value == 'STOPPED' || lines.value == 'NO DATA' || lines.value == 'SEARCHING...') lines.value = false;
     
         for(let pid of PIDS) {
-            if(pid.pid == lines.key)  return pid.parse(lines);
-        };
+            if(pid.pid == lines.key) return pid.parse(lines)
+        }
     },
     rawLines(raw) {
         let split = raw.split(/\r\n|\r|\n/g);

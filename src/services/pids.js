@@ -34,7 +34,6 @@ const PIDS = [
                 return {name: "coolant", value: 'No Value'};
             }
             let coolant = Math.round(parseInt(raw.value.split(' ')[2], 16))
-            console.log(coolant)
             return {name: "coolant", value: coolant}
         }
     }
