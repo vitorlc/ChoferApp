@@ -4,7 +4,6 @@ import {
   ToastAndroid,
   View,
   SafeAreaView,
-  Text,
   FlatList,
   TouchableOpacity,
 } from 'react-native';
@@ -12,6 +11,7 @@ import {
   Icon,
   Button,
   Header,
+  Text,
 } from 'react-native-elements'
 import { useSelector, useDispatch } from "react-redux";
 
@@ -22,7 +22,6 @@ import Padrao from '../styles/default'
 import PIDS from '../services/pids';
 import bluetooth from '../services/bluetooth';
 import obd from '../services/obd';
-import {changeRpm} from '../store/actions'
 
 
 const Device = ({ device, onPress, style }) => {
@@ -80,12 +79,7 @@ const Main = () => {
 
       if (available > 0) {
         let data = await bluetooth.read()
-        let reply = obd.parse(data)
-        if (reply && reply.value) {
-          console.log("\n=== DATA ===")
-          console.log('>', reply);
-          setReadValue([{ ...reply }])
-        }
+        obd.parse(data, {dispatch})
       }
     } while (available > 0);
   };
@@ -231,13 +225,9 @@ const Main = () => {
               }
             </View>
 
-            {
-              readValue.map((value, index) => {
-                return (
-                  <Text key={index}>{value.name} : {value.value} </Text>
-                )
-              })
-            }
+            <Text h4>RPM: {store.rpm}</Text>
+            <Text h4>Load: {store.load}</Text>
+            <Text h4>Coolant: {store.coolant}</Text>
           </View>
 
         ) : null}

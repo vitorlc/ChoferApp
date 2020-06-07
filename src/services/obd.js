@@ -1,7 +1,7 @@
 import PIDS from './pids.js'
 
 const obd = {
-    parse(raw) {
+    parse(raw, store) {
         let lines = this.rawLines(raw);
 
         if(!lines) return;
@@ -9,7 +9,7 @@ const obd = {
         if(lines.value == 'STOPPED' || lines.value == 'NO DATA' || lines.value == 'SEARCHING...') lines.value = false;
     
         for(let pid of PIDS) {
-            if(pid.pid == lines.key) return pid.parse(lines)
+            if(pid.pid == lines.key) pid.parse(lines, store)
         }
     },
     rawLines(raw) {
