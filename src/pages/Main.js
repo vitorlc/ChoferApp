@@ -13,6 +13,7 @@ import {
   Button,
   Header,
 } from 'react-native-elements'
+import { useSelector, useDispatch } from "react-redux";
 
 import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic';
 
@@ -21,6 +22,7 @@ import Padrao from '../styles/default'
 import PIDS from '../services/pids';
 import bluetooth from '../services/bluetooth';
 import obd from '../services/obd';
+import {changeRpm} from '../store/actions'
 
 
 const Device = ({ device, onPress, style }) => {
@@ -44,6 +46,9 @@ const Device = ({ device, onPress, style }) => {
 }
 
 const Main = () => {
+  const store = useSelector(state => state.mainReducer)
+  const dispatch = useDispatch()
+
   const [deviceList, setDeviceList] = useState([])
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
@@ -51,6 +56,11 @@ const Main = () => {
   const [startRead, setReading] = useState(false)
   const [stopRead, setStopRead ] = useState(false)
 
+
+
+  console.log(store)
+ 
+ 
 
   let lastIndex = 0;
   let total = PIDS.length - 1;

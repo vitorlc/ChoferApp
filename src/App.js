@@ -2,7 +2,7 @@ import React from 'react';
 import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 
-import rootReducer from './reducers'
+import rootReducer from './store'
 import Main from './pages/Main'
 
 const store = createStore(rootReducer)
