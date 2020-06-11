@@ -228,6 +228,7 @@ const Main = () => {
             <Text h4>RPM: {store.rpm}</Text>
             <Text h4>Load: {store.load}</Text>
             <Text h4>Coolant: {store.coolant}</Text>
+            <Text h4>Speed: {store.speed}</Text>
           </View>
 
         ) : null}
