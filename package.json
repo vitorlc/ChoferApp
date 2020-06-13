@@ -11,12 +11,16 @@
     "react-devtool": "react-devtools"
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.11.0",
     "buffer": "^5.6.0",
+    "moment": "^2.26.0",
     "react": "16.11.0",
     "react-native": "0.62.2",
     "react-native-bluetooth-classic": "^0.10.9",
+    "react-native-chart-kit": "^5.6.0",
     "react-native-devsettings-android": "^0.4.0",
     "react-native-elements": "^2.0.0",
+    "react-native-svg": "^12.1.0",
     "react-native-vector-icons": "^6.6.0",
     "react-redux": "^7.2.0",
     "redux": "^4.0.5"

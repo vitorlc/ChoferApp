@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   StyleSheet,
   ToastAndroid,
@@ -6,22 +6,22 @@ import {
   SafeAreaView,
   FlatList,
   TouchableOpacity,
-} from 'react-native';
+} from 'react-native'
 import {
   Icon,
   Button,
   Header,
   Text,
 } from 'react-native-elements'
-import { useSelector, useDispatch } from "react-redux";
-
-import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic';
+import { useSelector, useDispatch } from "react-redux"
+import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic'
 
 import Padrao from '../styles/default'
 
-import PIDS from '../services/pids';
-import bluetooth from '../services/bluetooth';
-import obd from '../services/obd';
+import PIDS from '../services/pids'
+import bluetooth from '../services/bluetooth'
+import obd from '../services/obd'
+import { changeListen } from "../store/actions"
 
 
 const Device = ({ device, onPress, style }) => {
@@ -51,23 +51,20 @@ const Main = () => {
   const [deviceList, setDeviceList] = useState([])
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
-  const [readValue, setReadValue] = useState([{ name: '', vale: '' }]);
-  const [startRead, setReading] = useState(false)
-  const [stopRead, setStopRead ] = useState(false)
 
-
-
-  console.log(store)
- 
- 
+  // console.log("INITIAL STATE: ")
+  // console.log(store)
 
   let lastIndex = 0;
   let total = PIDS.length - 1;
+  let pollWrite
+  let pollRead
 
   useEffect(() => {
     return (() => {
       this.onRead.remove();
-      clearInterval(this.poll);
+      clearInterval(pollWrite)
+      clearInterval(pollRead);
       RNBluetoothClassic.disconnect();
     })
   }, [])
@@ -79,12 +76,10 @@ const Main = () => {
 
       if (available > 0) {
         let data = await bluetooth.read()
-        obd.parse(data, {dispatch})
+        obd.parse(data, { dispatch })
       }
     } while (available > 0);
   };
-
-  
 
   function writeValue(type) {
     if (type == 'reset') {
@@ -109,20 +104,20 @@ const Main = () => {
       //http://www.obdtester.com/elm-usb-commands
       bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
     } else {
-      setReading(true)
 
-      let pollWrite = setInterval(() => {
-          bluetooth.write(PIDS[lastIndex].pid)
-  
-          if (lastIndex == total) {
-            lastIndex = 0;
-          } else {
-            lastIndex = lastIndex + 1;
-          }
-      }, 700)
+      pollWrite = setInterval(() => {
+        bluetooth.write(PIDS[lastIndex].pid)
 
+        if (lastIndex == total) {
+          lastIndex = 0;
+        } else {
+          lastIndex = lastIndex + 1;
+        }
+      }, 1000)
 
-      this.poll = setInterval(() => this.pollForData(), 500);
+      pollRead = setInterval(() => this.pollForData(), 500);
+
+      dispatch(changeListen(true))
     }
   }
 
@@ -168,8 +163,9 @@ const Main = () => {
     }
   }
 
-  stop = async () => {
-    setStopRead(true)
+  const stop = async () => {
+    clearInterval(poll)
+    clearInterval(pollWrite)
   }
 
   return (
@@ -208,29 +204,26 @@ const Main = () => {
           <View>
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              {startRead ? (
+              {store.listen ? (
 
                 <Button
                   onPress={stop}
                   title="Parar Leitura"
                 ></Button>
-                
-                ) : (
+              ) : (
                   <Button
                     onPress={writeValue}
                     title="Iniciar Leitura"
                   ></Button>
-                  
                 )
               }
             </View>
 
-            <Text h4>RPM: {store.rpm}</Text>
-            <Text h4>Load: {store.load}</Text>
-            <Text h4>Coolant: {store.coolant}</Text>
-            <Text h4>Speed: {store.speed}</Text>
+            <Text h4>RPM: {store.rpm} rev/min</Text>
+            <Text h4>Load: {store.load} %</Text>
+            <Text h4>Coolant: {store.coolant} C</Text>
+            <Text h4>Speed: {store.speed} km/h</Text>
           </View>
-
         ) : null}
       </View>
     </SafeAreaView>

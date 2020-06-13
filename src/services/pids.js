@@ -1,4 +1,5 @@
 import { changeCoolant, changeLoad, changeRpm, changeSpeed } from "../store/actions";
+import AsyncStorage from '@react-native-community/async-storage';
 
 const PIDS = [
 
@@ -64,8 +65,22 @@ const PIDS = [
             }
 
             let speed = parseInt(raw.value.split(' ')[2], 16)
-
-            store.dispatch(changeSpeed(speed))
+            
+            if(speed != ' ' && speed != undefined && speed != NaN) {
+                AsyncStorage.getItem('speedData')
+                .then(result => {
+                    if(result !== null) {
+                        let speedData = JSON.parse(result).concat({"speed": speed, "hour": new Date() })
+                        AsyncStorage.setItem('speedData', JSON.stringify(speedData))
+                    }else {
+                        AsyncStorage.setItem('speedData', JSON.stringify([{"speed": speed, "hour": new Date() }]))
+                    }
+                    
+                })
+                .catch(error => console.log('error!', error))
+    
+                store.dispatch(changeSpeed(speed))
+            }
         }
     }
 
