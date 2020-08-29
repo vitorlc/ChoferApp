@@ -107,7 +107,6 @@ const Main = () => {
 
       pollWrite = setInterval(() => {
         bluetooth.write(PIDS[lastIndex].pid)
-
         if (lastIndex == total) {
           lastIndex = 0;
         } else {
@@ -115,7 +114,7 @@ const Main = () => {
         }
       }, 1000)
 
-      pollRead = setInterval(() => this.pollForData(), 500);
+      pollRead = setInterval(() => this.pollForData(), 1000);
 
       dispatch(changeListen(true))
     }
@@ -159,13 +158,13 @@ const Main = () => {
       setDevice(connectedDevice);
     } catch (error) {
       ToastAndroid.show(`Erro ao tentar se conrectar!`, 3000)
-      console.log(error.message);
     }
   }
 
   const stop = async () => {
-    clearInterval(poll)
+    clearInterval(pollRead)
     clearInterval(pollWrite)
+    dispatch(changeListen(false))
   }
 
   return (
@@ -208,12 +207,12 @@ const Main = () => {
 
                 <Button
                   onPress={stop}
-                  title="Parar Leitura"
+                  title="Parar Corrida"
                 ></Button>
               ) : (
                   <Button
                     onPress={writeValue}
-                    title="Iniciar Leitura"
+                    title="Iniciar Corrida"
                   ></Button>
                 )
               }
@@ -236,8 +235,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
     margin: 10
   },
   button: {
