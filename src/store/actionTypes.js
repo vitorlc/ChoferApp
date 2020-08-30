@@ -5,6 +5,7 @@ export const CAR_ENGINE_LOAD = 'CAR_ENGINE_LOAD';
 export const CAR_ENGINE_RPM = 'CAR_ENGINE_RPM';
 export const CAR_SPEED = 'CAR_SPEED';
 export const CAR_COOLANT = 'CAR_COOLANT';
+export const CAR_MAF = 'CAR_MAF';
 
 export const BLUETOOTH_STATUS = 'BLUETOOTH_STATUS';
 export const BLUETOOTH_ERROR = 'BLUETOOTH_ERROR';

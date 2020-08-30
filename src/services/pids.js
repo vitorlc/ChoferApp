@@ -1,4 +1,4 @@
-import { changeCoolant, changeLoad, changeRpm, changeSpeed } from "../store/actions";
+import { changeCoolant, changeLoad, changeRpm, changeSpeed, changeMAF } from "../store/actions";
 import AsyncStorage from '@react-native-community/async-storage';
 
 const PIDS = [
@@ -79,11 +79,27 @@ const PIDS = [
                 })
                 .catch(error => console.log('error!', error))
     
-                store.dispatch(changeSpeed(speed))
             }
+            store.dispatch(changeSpeed(speed))
+        }
+    },
+    {
+        //MAF (Mass air flow)
+        pid: "0110",
+        name: "maf",
+        unit: "g/s",
+        parse(raw, store) {
+            if (!raw.value) {
+                store.dispatch(changeMAF(0))
+                return
+            }
+
+            let rawValue = raw.value.split(' ')
+            let maf = ((parseInt(rawValue[2], 16) * 256) + parseInt(rawValue[3], 16)) / 100
+            
+            store.dispatch(changeMAF(maf))
         }
     }
-
 ];
 
 export default PIDS;

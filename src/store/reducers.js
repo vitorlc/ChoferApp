@@ -7,7 +7,8 @@ const INITIAL_STATE = {
   rpm: 0,
   load: 0,
   speed: 0,
-  coolant: 0
+  coolant: 0,
+  maf: 0
 }
 
 const mainReducer = (state = INITIAL_STATE, action) => {
@@ -22,6 +23,8 @@ const mainReducer = (state = INITIAL_STATE, action) => {
       return { ...state, speed: action.value }
     case CAR_COOLANT:
       return { ...state, coolant: action.value }
+    case CAR_MAF:
+      return { ...state, maf: action.value }
     case CAR_LISTEN:
       return { ...state, listen: action.value }
     default:
