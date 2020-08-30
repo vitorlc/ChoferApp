@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "857747108082",
+    "firebase_url": "https://chofer-app-f5510.firebaseio.com",
+    "project_id": "chofer-app-f5510",
+    "storage_bucket": "chofer-app-f5510.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857747108082:android:c95ac2f5c3e7e68a40606b",
+        "android_client_info": {
+          "package_name": "com.choferapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "857747108082-v3k5m0dp09hvijout558fme0maj51k3e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOpAU62MtV8eMfTqoUF6Ur_DqB4DX3ArE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "857747108082-v3k5m0dp09hvijout558fme0maj51k3e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
