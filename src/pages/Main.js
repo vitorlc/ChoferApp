@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   StyleSheet,
   ToastAndroid,
@@ -12,6 +12,7 @@ import {
   Button,
   Header,
   Text,
+  CheckBox
 } from 'react-native-elements'
 import { useSelector, useDispatch } from "react-redux"
 import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic'
@@ -21,8 +22,8 @@ import Padrao from '../styles/default'
 import PIDS from '../services/pids'
 import bluetooth from '../services/bluetooth'
 import obd from '../services/obd'
-import { changeListen } from "../store/actions"
-
+import { changeListen, addRaceRef } from "../store/actions"
+import db from "../services/db"
 
 const Device = ({ device, onPress, style }) => {
   let bgColor = device.connected
@@ -44,6 +45,23 @@ const Device = ({ device, onPress, style }) => {
   )
 }
 
+const FuelConsumption= ({MAF, V, fuel})=> {
+  const AFR = {
+    'Gasolina': 14.7,
+    'Etanol': 9
+  }
+  const D = {
+    'Gasolina': 765,
+    'Etanol': 811
+  }
+  const calculateConsume = (MAF, V, fuel) => {
+    return (MAF/(AFR[fuel]*D[fuel]*V))*3600
+  }
+  return (
+    <Text h4>Comsumo de Combustível: {calculateConsume(MAF, V, fuel)}</Text>
+  )
+}
+
 const Main = () => {
   const store = useSelector(state => state.mainReducer)
   const dispatch = useDispatch()
@@ -51,9 +69,8 @@ const Main = () => {
   const [deviceList, setDeviceList] = useState([])
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
+  const [fuel, setFuel] = useState('Etanol');
 
-  // console.log("INITIAL STATE: ")
-  // console.log(store)
 
   let lastIndex = 0;
   let total = PIDS.length - 1;
@@ -69,6 +86,8 @@ const Main = () => {
     })
   }, [])
 
+  const consumeMemoized = useMemo(() => <FuelConsumption MAF={store.maf} V={store.speed} fuel={fuel}/>, [store.maf, store.speed, fuel]);
+
   pollForData = async () => {
     let available = 0;
     do {
@@ -81,7 +100,7 @@ const Main = () => {
     } while (available > 0);
   };
 
-  function writeValue(type) {
+  async function writeValue(type) {
     if (type == 'reset') {
       this.onRead = RNBluetoothClassic.addListener(
         BTEvents.READ,
@@ -103,6 +122,8 @@ const Main = () => {
       //self.write('ATST0A');
       //http://www.obdtester.com/elm-usb-commands
       bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
+      const raceRef  = await db.addRace({fuel: fuel})
+      dispatch(addRaceRef(raceRef))
     } else {
 
       pollWrite = setInterval(() => {
@@ -165,6 +186,15 @@ const Main = () => {
     clearInterval(pollRead)
     clearInterval(pollWrite)
     dispatch(changeListen(false))
+    db.stopRace(store)
+    dispatch(addRaceRef(null))
+  }
+
+  const changeFuel = async (fuelName) => {
+    setFuel(fuelName)
+    await store.raceRef.update({
+      fuel: fuelName
+    })
   }
 
   return (
@@ -200,8 +230,23 @@ const Main = () => {
           </View>
         ) : null}
         {device ? (
-          <View>
-
+          <View> 
+            <CheckBox
+              title='Gasolina'
+              checked={fuel == 'Gasolina'}
+              onPress={() => changeFuel('Gasolina')}
+            />
+            <CheckBox
+              title='Etanol'
+              checked={fuel == 'Etanol'}
+              onPress={() => changeFuel('Etanol')}
+            />
+            <Text h4>RPM: {store.rpm} rev/min</Text>
+            <Text h4>Load: {store.load} %</Text>
+            <Text h4>Coolant: {store.coolant} C</Text>
+            <Text h4>Speed: {store.speed} km/h</Text>
+            <Text h4>MAF: {store.maf} g/s</Text>
+            {consumeMemoized}
             <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
               {store.listen ? (
 
@@ -217,11 +262,6 @@ const Main = () => {
                 )
               }
             </View>
-
-            <Text h4>RPM: {store.rpm} rev/min</Text>
-            <Text h4>Load: {store.load} %</Text>
-            <Text h4>Coolant: {store.coolant} C</Text>
-            <Text h4>Speed: {store.speed} km/h</Text>
           </View>
         ) : null}
       </View>

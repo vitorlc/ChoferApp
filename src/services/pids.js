@@ -1,5 +1,5 @@
 import { changeCoolant, changeLoad, changeRpm, changeSpeed, changeMAF } from "../store/actions";
-import AsyncStorage from '@react-native-community/async-storage';
+import firestore from '@react-native-firebase/firestore'
 
 const PIDS = [
 
@@ -65,22 +65,15 @@ const PIDS = [
             }
 
             let speed = parseInt(raw.value.split(' ')[2], 16)
-            
-            if(speed != ' ' && speed != undefined && speed != NaN) {
-                AsyncStorage.getItem('speedData')
-                .then(result => {
-                    if(result !== null) {
-                        let speedData = JSON.parse(result).concat({"speed": speed, "hour": new Date() })
-                        AsyncStorage.setItem('speedData', JSON.stringify(speedData))
-                    }else {
-                        AsyncStorage.setItem('speedData', JSON.stringify([{"speed": speed, "hour": new Date() }]))
-                    }
-                    
+            if (speed != ' ' && speed != undefined && speed != NaN) {
+                await store.raceRef.speed_data.update({
+                    data: firestore.FieldValue.arrayUnion({
+                        value: speed,
+                        date: firestore.FieldValue.serverTimestamp()
+                    })
                 })
-                .catch(error => console.log('error!', error))
-    
+                store.dispatch(changeSpeed(speed))
             }
-            store.dispatch(changeSpeed(speed))
         }
     },
     {
@@ -96,8 +89,15 @@ const PIDS = [
 
             let rawValue = raw.value.split(' ')
             let maf = ((parseInt(rawValue[2], 16) * 256) + parseInt(rawValue[3], 16)) / 100
-            
-            store.dispatch(changeMAF(maf))
+            if (maf != ' ' && maf != undefined && maf != NaN) {
+                await store.raceRef.maf_data.update({
+                    data: firestore.FieldValue.arrayUnion({
+                        value: maf, 
+                        date: firestore.FieldValue.serverTimestamp()
+                    })
+                })
+                store.dispatch(changeMAF(maf))
+            } 
         }
     }
 ];

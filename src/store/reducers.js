@@ -1,4 +1,4 @@
-import { CAR_LISTEN, CAR_ENGINE_LOAD, CAR_ENGINE_RPM, CAR_ENGINE_STATUS, CAR_SPEED, CAR_COOLANT, CAR_MAF } from './actionTypes';
+import { CAR_LISTEN, CAR_ENGINE_LOAD, CAR_ENGINE_RPM, CAR_ENGINE_STATUS, CAR_SPEED, CAR_COOLANT, CAR_MAF, RACE_REF } from './actionTypes';
 
 const INITIAL_STATE = {
   status: false,
@@ -8,7 +8,8 @@ const INITIAL_STATE = {
   load: 0,
   speed: 0,
   coolant: 0,
-  maf: 0
+  maf: 0,
+  raceRef: null
 }
 
 const mainReducer = (state = INITIAL_STATE, action) => {
@@ -27,6 +28,8 @@ const mainReducer = (state = INITIAL_STATE, action) => {
       return { ...state, maf: action.value }
     case CAR_LISTEN:
       return { ...state, listen: action.value }
+    case RACE_REF: 
+      return { ...state, raceRef: action.value }
     default:
       return state
   }
