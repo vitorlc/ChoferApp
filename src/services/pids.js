@@ -66,7 +66,7 @@ const PIDS = [
 
             let speed = parseInt(raw.value.split(' ')[2], 16)
             if (speed != ' ' && speed != undefined && speed != NaN) {
-                await store.raceRef.speed_data.update({
+                store.raceRef.speed_data.update({
                     data: firestore.FieldValue.arrayUnion({
                         value: speed,
                         date: firestore.FieldValue.serverTimestamp()
@@ -90,7 +90,7 @@ const PIDS = [
             let rawValue = raw.value.split(' ')
             let maf = ((parseInt(rawValue[2], 16) * 256) + parseInt(rawValue[3], 16)) / 100
             if (maf != ' ' && maf != undefined && maf != NaN) {
-                await store.raceRef.maf_data.update({
+                store.raceRef.maf_data.update({
                     data: firestore.FieldValue.arrayUnion({
                         value: maf, 
                         date: firestore.FieldValue.serverTimestamp()
