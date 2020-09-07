@@ -48,11 +48,13 @@ const Device = ({ device, onPress, style }) => {
 const FuelConsumption= ({MAF, V, fuel})=> {
   const AFR = {
     'Gasolina': 14.7,
-    'Etanol': 9
+    'Etanol': 9,
+    'Diesel': 14.6
   }
   const D = {
-    'Gasolina': 765,
-    'Etanol': 811
+    'Gasolina': 737,
+    'Etanol': 789,
+    'Diesel': 850
   }
   const calculateConsume = (MAF, V, fuel) => {
     return (MAF/(AFR[fuel]*D[fuel]*V))*3600
@@ -240,6 +242,11 @@ const Main = () => {
               title='Etanol'
               checked={fuel == 'Etanol'}
               onPress={() => changeFuel('Etanol')}
+            />
+            <CheckBox
+              title='Diesel'
+              checked={fuel == 'Diesel'}
+              onPress={() => changeFuel('Diesel')}
             />
             <Text h4>RPM: {store.rpm} rev/min</Text>
             <Text h4>Load: {store.load} %</Text>
