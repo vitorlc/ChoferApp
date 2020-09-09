@@ -2,14 +2,13 @@ import firestore from '@react-native-firebase/firestore'
 
 const db = {
   async addRace(data) {
-    let speedRef = await firestore().collection('speed_data').add({ data: [] })
-    let mafRef =  await firestore().collection('maf_data').add({ data: [] })
     let raceRef = await firestore().collection('races')
       .add({
         fuel: data.fuel,
         race_start: firestore.FieldValue.serverTimestamp(),
-        speed_data: speedRef,
-        maf_ref: mafRef
+        speed_data: [],
+        maf_data: [],
+        rpm_data: []
       }).catch( error => console.log(error) )
     return raceRef
   },

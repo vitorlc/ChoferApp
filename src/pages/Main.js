@@ -97,7 +97,7 @@ const Main = () => {
 
       if (available > 0) {
         let data = await bluetooth.read()
-        obd.parse(data, { dispatch })
+        obd.parse(data, { dispatch, ...store })
       }
     } while (available > 0);
   };

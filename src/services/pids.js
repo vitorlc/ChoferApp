@@ -16,8 +16,15 @@ const PIDS = [
 
             let a = raw.value.split(' ')
             let rpm = ((parseInt(a[2], 16) * 256) + parseInt(a[3], 16)) / 4
-
-            store.dispatch(changeRpm(rpm))
+            if (rpm != ' ' && rpm != undefined && rpm != NaN) {
+                store.raceRef.update({
+                    rpm_data: firestore.FieldValue.arrayUnion({
+                        value: rpm,
+                        date: firestore.Timestamp.fromDate(new Date())
+                    })
+                })
+                store.dispatch(changeRpm(rpm))
+            }
         }
     },
     {   
@@ -66,10 +73,10 @@ const PIDS = [
 
             let speed = parseInt(raw.value.split(' ')[2], 16)
             if (speed != ' ' && speed != undefined && speed != NaN) {
-                store.raceRef.speed_data.update({
-                    data: firestore.FieldValue.arrayUnion({
+                store.raceRef.update({
+                    speed_data: firestore.FieldValue.arrayUnion({
                         value: speed,
-                        date: firestore.FieldValue.serverTimestamp()
+                        date: firestore.Timestamp.fromDate(new Date())
                     })
                 })
                 store.dispatch(changeSpeed(speed))
@@ -90,10 +97,10 @@ const PIDS = [
             let rawValue = raw.value.split(' ')
             let maf = ((parseInt(rawValue[2], 16) * 256) + parseInt(rawValue[3], 16)) / 100
             if (maf != ' ' && maf != undefined && maf != NaN) {
-                store.raceRef.maf_data.update({
-                    data: firestore.FieldValue.arrayUnion({
+                store.raceRef.update({
+                    maf_data: firestore.FieldValue.arrayUnion({
                         value: maf, 
-                        date: firestore.FieldValue.serverTimestamp()
+                        date: firestore.Timestamp.fromDate(new Date())
                     })
                 })
                 store.dispatch(changeMAF(maf))
