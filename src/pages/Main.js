@@ -3,9 +3,10 @@ import {
   StyleSheet,
   ToastAndroid,
   View,
+  Modal,
+  TouchableHighlight,
   SafeAreaView,
   FlatList,
-  TouchableOpacity,
 } from 'react-native'
 import {
   Icon,
@@ -25,27 +26,41 @@ import obd from '../services/obd'
 import { changeListen, addRaceRef } from "../store/actions"
 import db from "../services/db"
 
-const Device = ({ device, onPress, style }) => {
-  let bgColor = device.connected
-    ? '#0f0'
-    : '#ccc';
-  return (
-    <TouchableOpacity
-      key={device.id}
-      style={[styles.button, style]}
-      onPress={onPress}>
-      <View
-        style={[styles.connectionStatus, { backgroundColor: bgColor }]}
-      />
-      <View style={{ flex: 1 }}>
-        <Text style={styles.deviceName}>{device.name}</Text>
-        <Text>{device.address}</Text>
-      </View>
-    </TouchableOpacity>
-  )
-}
+const ModalDevice = ({ visible, deviceList, selectDevice, changeModalVisible }) =>
+  <Modal
+    animationType="slide"
+    transparent={true}
+    visible={visible}
+    onRequestClose={() => {
+      Alert.alert("Modal has been closed.");
+    }}
+  >
+    <View style={styles.centeredView}>
+      <View style={styles.modalView}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Selecione abaixo</Text>
+        <FlatList
+          data={deviceList}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) =>
+            <Device
+              device={item}
+              onPress={() => selectDevice(item)}
+            />}
+        />
 
-const FuelConsumption= ({MAF, V, fuel})=> {
+        <TouchableHighlight
+          style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+          onPress={changeModalVisible}
+        >
+          <Text style={styles.textStyle}>Voltar</Text>
+        </TouchableHighlight>
+      </View>
+    </View>
+  </Modal>
+
+const FuelConsumption = ({ MAF, speed, fuel }) => {
+  const store = useSelector(state => state.mainReducer)
+
   const AFR = {
     'Gasolina': 14.7,
     'Etanol': 9,
@@ -81,14 +96,13 @@ const Main = () => {
 
   useEffect(() => {
     return (() => {
-      this.onRead.remove();
       clearInterval(pollWrite)
       clearInterval(pollRead);
       RNBluetoothClassic.disconnect();
     })
   }, [])
 
-  const consumeMemoized = useMemo(() => <FuelConsumption MAF={store.maf} V={store.speed} fuel={fuel}/>, [store.maf, store.speed, fuel]);
+  const consumeMemoized = useMemo(() => <FuelConsumption MAF={store.maf} V={store.speed} fuel={fuel} />, [store.maf, store.speed, fuel])
 
   pollForData = async () => {
     let available = 0;
@@ -104,11 +118,7 @@ const Main = () => {
 
   async function writeValue(type) {
     if (type == 'reset') {
-      this.onRead = RNBluetoothClassic.addListener(
-        BTEvents.READ,
-        this.handleRead,
-        this,
-      )
+
       bluetooth.write('ATZ');
       //Turns off extra line feed and carriage return
       bluetooth.write('ATL0');
@@ -124,7 +134,7 @@ const Main = () => {
       //self.write('ATST0A');
       //http://www.obdtester.com/elm-usb-commands
       bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
-      const raceRef  = await db.addRace({fuel: fuel})
+      const raceRef = await db.addRace({ fuel: fuel })
       dispatch(addRaceRef(raceRef))
     } else {
 
@@ -204,72 +214,68 @@ const Main = () => {
       <Header
         placement="left"
         centerComponent={{ text: 'Chofer App', style: { color: Padrao.color_1.color, fontWeight: 'bold', fontSize: 30 } }}
+        leftComponent={{ icon: 'menu', color: '#fff' }}
         rightComponent={
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 80 }}>
-            <Icon name='settings-bluetooth' color='#fff' onPress={() => listUnpairedDevices()} />
-            <Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />
-          </View>
+          <Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />
         }
         containerStyle={{
-          height: 70,
+          height: 60,
           backgroundColor: '#78bc6d',
-          justifyContent: 'space-around',
+          paddingTop: 1
         }}
       />
       <View style={styles.container}>
         {listEnable ? (
-          <View>
-            <FlatList
-              data={deviceList}
-              renderItem={({ item }) =>
-                <Device
-                  device={item}
-                  onPress={() => selectDevice(item)}
-                />}
-              keyExtractor={item => item.id}
-
-            />
-          </View>
+          <ModalDevice visible={true} changeModalVisible={() => setListEnable(false)} deviceList={deviceList} selectDevice={selectDevice} />
         ) : null}
         {device ? (
-          <View> 
-            <CheckBox
-              title='Gasolina'
-              checked={fuel == 'Gasolina'}
-              onPress={() => changeFuel('Gasolina')}
-            />
-            <CheckBox
-              title='Etanol'
-              checked={fuel == 'Etanol'}
-              onPress={() => changeFuel('Etanol')}
-            />
-            <CheckBox
-              title='Diesel'
-              checked={fuel == 'Diesel'}
-              onPress={() => changeFuel('Diesel')}
-            />
-            <Text h4>RPM: {store.rpm} rev/min</Text>
-            <Text h4>Load: {store.load} %</Text>
-            <Text h4>Coolant: {store.coolant} C</Text>
-            <Text h4>Speed: {store.speed} km/h</Text>
-            <Text h4>MAF: {store.maf} g/s</Text>
-            {consumeMemoized}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-              {store.listen ? (
-
-                <Button
-                  onPress={stop}
-                  title="Parar Corrida"
-                ></Button>
-              ) : (
-                  <Button
-                    onPress={writeValue}
-                    title="Iniciar Corrida"
-                  ></Button>
-                )
-              }
+          <View style={{ flex: 1 }}>
+            <Text style={styles.text}>Combustível: </Text>
+            <View style={styles.checkbox}>
+              <CheckBox
+                title='Gasolina'
+                checked={fuel == 'Gasolina'}
+                onPress={() => changeFuel('Gasolina')}
+              />
+              <CheckBox
+                title='Etanol'
+                checked={fuel == 'Etanol'}
+                onPress={() => changeFuel('Etanol')}
+              />
+              <CheckBox
+                title='Diesel'
+                checked={fuel == 'Diesel'}
+                onPress={() => changeFuel('Diesel')}
+              />
+            </View>
+            <View>
+              <Text style={styles.text}>RPM: {store.rpm} rev/min</Text>
+              <Text style={styles.text}>Load: {store.load} %</Text>
+              <Text style={styles.text}>Coolant: {store.coolant} C</Text>
+              <Text style={styles.text}>Speed: {store.speed} km/h</Text>
+              <Text style={styles.text}>MAF: {store.maf} g/s</Text>
+              {consumeMemoized}
             </View>
           </View>
+        ) : null}
+      </View>
+      <View style={styles.footer}>
+        {device ? (
+          store.listen ? (
+            <Button
+              containerStyle={styles.btnContainer}
+              buttonStyle={styles.btnCancelar}
+              title="PARAR CORRIDA"
+              onPress={stop}
+            ></Button>
+          ) : (
+              <Button
+                containerStyle={styles.btnContainer}
+                buttonStyle={styles.btnSalvar}
+                title="INICIAR CORRIDA"
+                onPress={writeValue}
+              ></Button>
+            )
         ) : null}
       </View>
     </SafeAreaView>
@@ -282,27 +288,64 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    margin: 10
+    marginLeft: 10,
+    marginRight: 10
   },
-  button: {
+  footer: {
+    flex: 1,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0
+  },
+  text: {
+    fontSize: 20,
+    fontWeight: 'bold'
+  },
+  checkbox: {
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-    paddingTop: 8,
     paddingBottom: 8,
-    paddingLeft: 16,
-    paddingRight: 16,
+    maxHeight: 55
   },
-  deviceName: {
-    fontSize: 16,
+  btnContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+    marginBottom: 10,
   },
-  connectionStatus: {
-    width: 8,
-    backgroundColor: '#ccc',
-    marginRight: 16,
-    marginTop: 8,
-    marginBottom: 8,
-  }
+  btnCancelar: {
+    height: 60,
+    backgroundColor: 'rgba(224, 71, 66, 1)',
+  },
+  btnSalvar: {
+    height: 60,
+    backgroundColor: '#78BC6D'
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5
+  },
+  openButton: {
+    backgroundColor: "#F194FF",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 });
 
 export default Main;
