@@ -17,6 +17,7 @@ import {
 } from 'react-native-elements'
 import { useSelector, useDispatch } from "react-redux"
 import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic'
+import firestore from '@react-native-firebase/firestore'
 
 import Padrao from '../styles/default'
 
@@ -71,11 +72,20 @@ const FuelConsumption = ({ MAF, speed, fuel }) => {
     'Etanol': 789,
     'Diesel': 850
   }
-  const calculateConsume = (MAF, V, fuel) => {
-    return (MAF/(AFR[fuel]*D[fuel]*V))*3600
+  const calculateConsume = (MAF, speed, fuel) => {
+    let consumption = (MAF / (AFR[fuel] * D[fuel] * speed)) * 3600
+    if (consumption) {
+      store.raceRef.update({
+        consume_data: firestore.FieldValue.arrayUnion({
+          value: consumption,
+          date: firestore.Timestamp.fromDate(new Date())
+        })
+      })
+      return consumption
+    }
   }
   return (
-    <Text h4>Comsumo de Combustível: {calculateConsume(MAF, V, fuel)}</Text>
+    <Text style={styles.text}>Consumo de Combustível: {calculateConsume(MAF, speed, fuel)}</Text>
   )
 }
 
