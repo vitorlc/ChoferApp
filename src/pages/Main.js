@@ -127,6 +127,7 @@ const Main = () => {
   };
 
   async function writeValue(type) {
+    if(!device) return ToastAndroid.show(`Conecte-se ao OBDII`, 3000)
     if (type == 'reset') {
 
       bluetooth.write('ATZ');
@@ -214,9 +215,10 @@ const Main = () => {
 
   const changeFuel = async (fuelName) => {
     setFuel(fuelName)
-    await store.raceRef.update({
-      fuel: fuelName
-    })
+    if(store.raceRef)
+      await store.raceRef.update({
+        fuel: fuelName
+      })
   }
 
   return (
@@ -235,42 +237,38 @@ const Main = () => {
         }}
       />
       <View style={styles.container}>
-        {listEnable ? (
-          <ModalDevice visible={true} changeModalVisible={() => setListEnable(false)} deviceList={deviceList} selectDevice={selectDevice} />
-        ) : null}
-        {device ? (
-          <View style={{ flex: 1 }}>
-            <Text style={styles.text}>Combustível: </Text>
-            <View style={styles.checkbox}>
-              <CheckBox
-                title='Gasolina'
-                checked={fuel == 'Gasolina'}
-                onPress={() => changeFuel('Gasolina')}
-              />
-              <CheckBox
-                title='Etanol'
-                checked={fuel == 'Etanol'}
-                onPress={() => changeFuel('Etanol')}
-              />
-              <CheckBox
-                title='Diesel'
-                checked={fuel == 'Diesel'}
-                onPress={() => changeFuel('Diesel')}
-              />
-            </View>
-            <View>
-              <Text style={styles.text}>RPM: {store.rpm} rev/min</Text>
-              <Text style={styles.text}>Load: {store.load} %</Text>
-              <Text style={styles.text}>Coolant: {store.coolant} C</Text>
-              <Text style={styles.text}>Speed: {store.speed} km/h</Text>
-              <Text style={styles.text}>MAF: {store.maf} g/s</Text>
-              {consumeMemoized}
-            </View>
+        <ModalDevice visible={listEnable} changeModalVisible={() => setListEnable(false)} deviceList={deviceList} selectDevice={selectDevice} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.text}>Combustível: </Text>
+          <View style={styles.checkbox}>
+            <CheckBox
+              title='Gasolina'
+              checked={fuel == 'Gasolina'}
+              onPress={() => changeFuel('Gasolina')}
+            />
+            <CheckBox
+              title='Etanol'
+              checked={fuel == 'Etanol'}
+              onPress={() => changeFuel('Etanol')}
+            />
+            <CheckBox
+              title='Diesel'
+              checked={fuel == 'Diesel'}
+              onPress={() => changeFuel('Diesel')}
+            />
           </View>
-        ) : null}
+          <View>
+            <Text style={styles.text}>RPM: {store.rpm} rev/min</Text>
+            <Text style={styles.text}>Load: {store.load} %</Text>
+            <Text style={styles.text}>Coolant: {store.coolant} C</Text>
+            <Text style={styles.text}>Speed: {store.speed} km/h</Text>
+            <Text style={styles.text}>MAF: {store.maf} g/s</Text>
+            {consumeMemoized}
+          </View>
+        </View>
       </View>
       <View style={styles.footer}>
-        {device ? (
+        {
           store.listen ? (
             <Button
               containerStyle={styles.btnContainer}
@@ -279,14 +277,14 @@ const Main = () => {
               onPress={stop}
             ></Button>
           ) : (
-              <Button
-                containerStyle={styles.btnContainer}
-                buttonStyle={styles.btnSalvar}
-                title="INICIAR CORRIDA"
-                onPress={writeValue}
-              ></Button>
-            )
-        ) : null}
+            <Button
+              containerStyle={styles.btnContainer}
+              buttonStyle={styles.btnSalvar}
+              title="INICIAR CORRIDA"
+              onPress={writeValue}
+            ></Button>
+          )
+        }
       </View>
     </SafeAreaView>
   );
@@ -315,7 +313,6 @@ const styles = StyleSheet.create({
   checkbox: {
     flex: 1,
     flexDirection: 'row',
-    paddingBottom: 8,
     maxHeight: 55
   },
   btnContainer: {
