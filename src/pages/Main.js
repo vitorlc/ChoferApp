@@ -233,9 +233,7 @@ const Main = ({ navigation }) => {
           <Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />
         }
         containerStyle={{
-          height: 60,
           backgroundColor: '#78bc6d',
-          paddingTop: 1
         }}
       />
       <View style={styles.container}>
