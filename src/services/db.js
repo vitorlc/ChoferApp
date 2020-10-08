@@ -8,7 +8,8 @@ const db = {
         race_start: firestore.FieldValue.serverTimestamp(),
         speed_data: [],
         maf_data: [],
-        rpm_data: []
+        rpm_data: [],
+        consume_data: []
       }).catch( error => console.log(error) )
     return raceRef
   },

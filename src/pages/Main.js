@@ -89,7 +89,7 @@ const FuelConsumption = ({ MAF, speed, fuel }) => {
   )
 }
 
-const Main = () => {
+const Main = ({ navigation }) => {
   const store = useSelector(state => state.mainReducer)
   const dispatch = useDispatch()
 
@@ -226,7 +226,9 @@ const Main = () => {
       <Header
         placement="left"
         centerComponent={{ text: 'Chofer App', style: { color: Padrao.color_1.color, fontWeight: 'bold', fontSize: 30 } }}
-        leftComponent={{ icon: 'menu', color: '#fff' }}
+        leftComponent={
+          <Icon name='menu' color='#fff' onPress={()=> navigation.openDrawer()}/>
+        }
         rightComponent={
           <Icon name='bluetooth' color='#fff' onPress={() => listDevices()} />
         }
