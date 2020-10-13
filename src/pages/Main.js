@@ -7,6 +7,7 @@ import {
   TouchableHighlight,
   SafeAreaView,
   FlatList,
+  TouchableOpacity
 } from 'react-native'
 import {
   Icon,
@@ -26,6 +27,20 @@ import bluetooth from '../services/bluetooth'
 import obd from '../services/obd'
 import { changeListen, addRaceRef } from "../store/actions"
 import db from "../services/db"
+
+const Device = ({ device, onPress }) =>
+  <TouchableOpacity
+      key={device.id}
+      style={styles.button}
+      onPress={onPress}>
+      <View
+          style={[styles.connectionStatus, { backgroundColor: '#ccc' }]}
+      />
+      <View style={{ flex: 1 }}>
+          <Text style={styles.deviceName}>{device.name}</Text>
+          <Text>{device.address}</Text>
+      </View>
+  </TouchableOpacity>
 
 const ModalDevice = ({ visible, deviceList, selectDevice, changeModalVisible }) =>
   <Modal
@@ -346,6 +361,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F194FF",
     borderRadius: 20,
     padding: 10,
+    marginTop: 15,
     elevation: 2
   },
   textStyle: {
@@ -353,6 +369,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center"
   },
+  connectionStatus: {
+    width: 8,
+    backgroundColor: '#ccc',
+    marginRight: 16,
+    marginTop: 8,
+    marginBottom: 8,
+  }
 });
 
 export default Main;
