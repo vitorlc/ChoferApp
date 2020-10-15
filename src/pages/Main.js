@@ -74,7 +74,7 @@ const ModalDevice = ({ visible, deviceList, selectDevice, changeModalVisible }) 
     </View>
   </Modal>
 
-const FuelConsumption = ({ MAF, speed, fuel }) => {
+const FuelConsumption = ({ MAF, V, fuel }) => {
   const store = useSelector(state => state.mainReducer)
 
   const AFR = {
@@ -90,6 +90,7 @@ const FuelConsumption = ({ MAF, speed, fuel }) => {
   const calculateConsume = (MAF, speed, fuel) => {
     let consumption = (MAF / (AFR[fuel] * D[fuel] * speed)) * 3600
     if (consumption) {
+      consumption = consumption.toFixed(2)
       store.raceRef.update({
         consume_data: firestore.FieldValue.arrayUnion({
           value: consumption,
@@ -100,7 +101,7 @@ const FuelConsumption = ({ MAF, speed, fuel }) => {
     }
   }
   return (
-    <Text style={styles.text}>Consumo de Combustível: {calculateConsume(MAF, speed, fuel)}</Text>
+    <Text style={styles.text}>Consumo de Combustível: {calculateConsume(MAF, V, fuel)}</Text>
   )
 }
 
@@ -112,12 +113,10 @@ const Main = ({ navigation }) => {
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
   const [fuel, setFuel] = useState('Etanol');
-
-
+  const [pollWrite, setPollWrite] = useState(null)
+  const [pollRead, setPollRead] =useState(null)
   let lastIndex = 0;
   let total = PIDS.length - 1;
-  let pollWrite
-  let pollRead
 
   useEffect(() => {
     return (() => {
@@ -142,9 +141,7 @@ const Main = ({ navigation }) => {
   };
 
   async function writeValue(type) {
-    if(!device) return ToastAndroid.show(`Conecte-se ao OBDII`, 3000)
     if (type == 'reset') {
-
       bluetooth.write('ATZ');
       //Turns off extra line feed and carriage return
       bluetooth.write('ATL0');
@@ -157,39 +154,25 @@ const Main = ({ navigation }) => {
       //Turn adaptive timing to 2. This is an aggressive learn curve for adjusting the timeout. Will make huge difference on slow systems.
       bluetooth.write('ATAT2');
       //Set timeout to 10 * 4 = 40msec, allows +20 queries per second. This is the maximum wait-time. ATAT will decide if it should wait shorter or not.
-      //self.write('ATST0A');
+      bluetooth.write('ATST0A');
       //http://www.obdtester.com/elm-usb-commands
       bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
       const raceRef = await db.addRace({ fuel: fuel })
       dispatch(addRaceRef(raceRef))
     } else {
 
-      pollWrite = setInterval(() => {
+      let poll = setInterval(() => {
         bluetooth.write(PIDS[lastIndex].pid)
         if (lastIndex == total) {
           lastIndex = 0;
         } else {
           lastIndex = lastIndex + 1;
         }
-      }, 1000)
-
-      pollRead = setInterval(() => this.pollForData(), 1000);
-
+      }, 500)
+      let poll2 = setInterval(() => this.pollForData(), 500);
+      setPollWrite(poll)
+      setPollRead(poll2)
       dispatch(changeListen(true))
-    }
-  }
-
-  async function listUnpairedDevices() {
-    console.log("\n=== LISTANDO DISPOSITIVOS NÃO PAREADOS===")
-    try {
-      let deviceList = await bluetooth.listUnpairedDevices()
-      if (deviceList) {
-        writeValue('reset')
-        setDevice(true)
-        setListEnable(false)
-      }
-    } catch (err) {
-      console.log(err.message)
     }
   }
 
@@ -216,7 +199,7 @@ const Main = ({ navigation }) => {
       writeValue('reset')
       setDevice(connectedDevice);
     } catch (error) {
-      ToastAndroid.show(`Erro ao tentar se conrectar!`, 3000)
+      ToastAndroid.show(`Erro ao tentar se conectar!`, 3000)
     }
   }
 
@@ -224,7 +207,7 @@ const Main = ({ navigation }) => {
     clearInterval(pollRead)
     clearInterval(pollWrite)
     dispatch(changeListen(false))
-    db.stopRace(store)
+    await db.stopRace(store)
     dispatch(addRaceRef(null))
   }
 
@@ -295,6 +278,7 @@ const Main = ({ navigation }) => {
             <Button
               containerStyle={styles.btnContainer}
               buttonStyle={styles.btnSalvar}
+              disabled={!device}
               title="INICIAR CORRIDA"
               onPress={writeValue}
             ></Button>
