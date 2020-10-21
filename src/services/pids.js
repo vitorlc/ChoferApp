@@ -27,39 +27,39 @@ const PIDS = [
             }
         }
     },
-    {   
-        //LOAD Value
-        pid: '0104',
-        name: 'engineLoad',
-        unit: "%",
-        parse: (raw, store) => {
-            if (!raw.value) {
-                store.dispatch(changeLoad(0))
-                return
-            }
+    // {   
+    //     //LOAD Value
+    //     pid: '0104',
+    //     name: 'engineLoad',
+    //     unit: "%",
+    //     parse: (raw, store) => {
+    //         if (!raw.value) {
+    //             store.dispatch(changeLoad(0))
+    //             return
+    //         }
 
-            let load = Math.round(parseInt(raw.value.split(' ')[2], 16) * (100 / 255))
+    //         let load = Math.round(parseInt(raw.value.split(' ')[2], 16) * (100 / 255))
 
-            store.dispatch(changeLoad(load))
+    //         store.dispatch(changeLoad(load))
 
-        }
-    },
-    {
-        //Engine Coolant Temperature 
-        pid: '0105',
-        name: 'temp',
-        unit: "Celsius",
-        parse: (raw, store) => {
-            if (!raw.value) {
-                store.dispatch(changeCoolant(0))
-                return
-            }
+    //     }
+    // },
+    // {
+    //     //Engine Coolant Temperature 
+    //     pid: '0105',
+    //     name: 'temp',
+    //     unit: "Celsius",
+    //     parse: (raw, store) => {
+    //         if (!raw.value) {
+    //             store.dispatch(changeCoolant(0))
+    //             return
+    //         }
 
-            let coolant = Math.round(parseInt(raw.value.split(' ')[2], 16))
+    //         let coolant = Math.round(parseInt(raw.value.split(' ')[2], 16))
 
-            store.dispatch(changeCoolant(coolant))
-        }
-    },
+    //         store.dispatch(changeCoolant(coolant))
+    //     }
+    // },
     {
         //Speed Sensor
         pid: "010D",

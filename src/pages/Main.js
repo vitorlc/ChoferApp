@@ -126,7 +126,7 @@ const Main = ({ navigation }) => {
     })
   }, [])
 
-  const consumeMemoized = useMemo(() => <FuelConsumption MAF={store.maf} V={store.speed} fuel={fuel} />, [store.maf, store.speed, fuel])
+  const consumeMemoized = useMemo(() => <FuelConsumption MAF={store.maf} V={store.speed} fuel={fuel} />, [store.maf, store.speed])
 
   pollForData = async () => {
     let available = 0;
@@ -257,8 +257,6 @@ const Main = ({ navigation }) => {
           </View>
           <View>
             <Text style={styles.text}>RPM: {store.rpm} rev/min</Text>
-            <Text style={styles.text}>Load: {store.load} %</Text>
-            <Text style={styles.text}>Coolant: {store.coolant} C</Text>
             <Text style={styles.text}>Speed: {store.speed} km/h</Text>
             <Text style={styles.text}>MAF: {store.maf} g/s</Text>
             {consumeMemoized}
