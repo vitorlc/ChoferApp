@@ -66,10 +66,7 @@ const PIDS = [
         name: "speed",
         unit: "km/h",
         parse(raw, store) {
-            if (!raw.value) {
-                store.dispatch(changeSpeed(0))
-                return
-            }
+            if (raw.value == undefined || raw.value == NaN || raw.value == ' ') return
 
             let speed = parseInt(raw.value.split(' ')[2], 16)
             if (speed != ' ' && speed != undefined && speed != NaN) {
