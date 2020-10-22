@@ -7,7 +7,8 @@ import {
   TouchableHighlight,
   SafeAreaView,
   FlatList,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput
 } from 'react-native'
 import {
   Icon,
@@ -112,7 +113,8 @@ const Main = ({ navigation }) => {
   const [deviceList, setDeviceList] = useState([])
   const [device, setDevice] = useState(null)
   const [listEnable, setListEnable] = useState(false)
-  const [fuel, setFuel] = useState('Etanol');
+  const [fuel, setFuel] = useState('Etanol')
+  const [note, setNote] = useState('')
   const [pollWrite, setPollWrite] = useState(null)
   const [pollRead, setPollRead] =useState(null)
   let lastIndex = 0;
@@ -209,6 +211,7 @@ const Main = ({ navigation }) => {
     dispatch(changeListen(false))
     await db.stopRace(store)
     dispatch(addRaceRef(null))
+    setNote('')
   }
 
   const changeFuel = async (fuelName) => {
@@ -260,6 +263,12 @@ const Main = ({ navigation }) => {
             <Text style={styles.text}>Speed: {store.speed} km/h</Text>
             <Text style={styles.text}>MAF: {store.maf} g/s</Text>
             {consumeMemoized}
+            <Text style={styles.text}>Note:</Text>
+            <TextInput
+              style={{ height: 40, width: 250, borderColor: 'gray', borderWidth: 1 }}
+              onChangeText={setNote}
+              value={note}
+            />
           </View>
         </View>
       </View>

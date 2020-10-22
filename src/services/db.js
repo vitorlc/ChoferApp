@@ -9,7 +9,8 @@ const db = {
         speed_data: [],
         maf_data: [],
         rpm_data: [],
-        consume_data: []
+        consume_data: [],
+        note: data.note
       }).catch( error => console.log(error) )
     return raceRef
   },
