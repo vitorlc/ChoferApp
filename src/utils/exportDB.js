@@ -45,26 +45,29 @@ const myArgs = process.argv.slice(2);
   let worksheet6 = workbook.addWorksheet("Fuel Information")
 
   worksheet1.columns = [
-    {header: 'Date', key: 'date', width: 40},
-    {header: 'Value', key: 'value', width: 40},
+    {header: 'Date', key: 'date', width: 10},
+    {header: 'Value', key: 'value', width: 10},
   ]
   worksheet2.columns = [
-    {header: 'Date', key: 'date', width: 40},
-    {header: 'Value', key: 'value', width: 40},
+    {header: 'Date', key: 'date', width: 10},
+    {header: 'Value', key: 'value', width: 10},
   ]
   worksheet3.columns = [
-    {header: 'Date', key: 'date', width: 40},
-    {header: 'Value', key: 'value', width: 40},
+    {header: 'Date', key: 'date', width: 10},
+    {header: 'Value', key: 'value', width: 10},
   ]
   worksheet4.columns = [
-    {header: 'Date', key: 'date', width: 40},
-    {header: 'Value', key: 'value', width: 40},
+    {header: 'Date', key: 'date', width: 10},
+    {header: 'Value', key: 'value', width: 10},
   ]
   worksheet5.columns = [
     {header: 'Date', key: 'date', width: 15},
     {header: 'Speed', key: 'speed_value', width: 10},
     {header: 'RPM', key: 'rpm_value', width: 10},
     {header: 'MAF', key: 'maf_value', width: 10},
+    {header: 'Consume', key: 'consume_value', width: 10},
+    {width: 20},
+    {header: 'Consume Calculated', width: 20}
   ]
   worksheet6.columns = [
     {header: 'Fuel', key: 'fuel', width: 15},
@@ -94,6 +97,7 @@ const myArgs = process.argv.slice(2);
   raceFiltered.consume_data.forEach(data => {
     data.date = moment(data.date.toDate()).format("HH:mm:ss")
     worksheet4.addRow(data)
+    arrayData.push({date: data.date, consume_value: data.value})
   })
 
   const sortedArray = arrayData
