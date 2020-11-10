@@ -159,7 +159,7 @@ const Main = ({ navigation }) => {
       bluetooth.write('ATST0A');
       //http://www.obdtester.com/elm-usb-commands
       bluetooth.write('ATSP0'); // AUTOMATIC PROTOCOL DETECTION
-      const raceRef = await db.addRace({ fuel: fuel })
+      const raceRef = await db.addRace({ fuel: fuel, note: note })
       dispatch(addRaceRef(raceRef))
     } else {
 
