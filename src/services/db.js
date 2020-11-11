@@ -21,14 +21,22 @@ const db = {
       }).catch( error => console.log(error) )
     }
   },
-  async getSensors() {
-    let sensorList = []
+  async getRaces() {
+    let racesList = []
     let snapshot = await firestore().collection('races')
-      .orderBy('race_start')
+      .orderBy('race_start', 'desc')
+      .limit(6)
       .get()
-    snapshot.forEach( doc => sensorList.push(doc.data()) )
-    return sensorList
-  }  
+    snapshot.forEach( doc => racesList.push( doc.data()))
+    return racesList
+  },
+  async getRace(uid) {
+    let query = await firestore().collection('races')
+      .doc(uid)
+      .get()
+      .then((doc) => doc.data())
+    return query
+  }    
 }
 
 export default db
