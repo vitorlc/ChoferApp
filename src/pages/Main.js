@@ -20,6 +20,7 @@ import {
 import { useSelector, useDispatch } from "react-redux"
 import RNBluetoothClassic, { BTEvents, BTCharsets } from 'react-native-bluetooth-classic'
 import firestore from '@react-native-firebase/firestore'
+import KeepAwake from 'react-native-keep-awake'
 
 import Padrao from '../styles/default'
 
@@ -162,7 +163,7 @@ const Main = ({ navigation }) => {
       const raceRef = await db.addRace({ fuel: fuel, note: note })
       dispatch(addRaceRef(raceRef))
     } else {
-
+      KeepAwake.activate()
       let poll = setInterval(() => {
         bluetooth.write(PIDS[lastIndex].pid)
         if (lastIndex == total) {
@@ -212,6 +213,7 @@ const Main = ({ navigation }) => {
     await db.stopRace(store)
     dispatch(addRaceRef(null))
     setNote('')
+    KeepAwake.deactivate()
   }
 
   const changeFuel = async (fuelName) => {
