@@ -39,7 +39,7 @@ const ModalRace = ({visible, changeModalVisible, data}) =>  {
         <Text style={{ fontSize: 18, paddingTop: 5 }}>Início: {data.race_start} </Text>
         <Text style={{ fontSize: 18, paddingTop: 5 }}>Fim: {data.race_end} </Text>
         <Text style={{ fontSize: 18, paddingTop: 5 }}>Velocidade Média: {velocidadeMedia(data.speed_data)} km/h</Text>
-        <Text style={{ fontSize: 18, paddingTop: 5 }}>Consumo Instantâneo Médio: {consumoMedio(data.consume_data)}</Text>
+        <Text style={{ fontSize: 18, paddingTop: 5 }}>Consumo Instantâneo Médio: {consumoMedio(data.consume_data)} L/Km</Text>
         <Text style={{ fontSize: 18, paddingTop: 5 }}>Nota: {data.note} </Text>
         
 

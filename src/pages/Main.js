@@ -103,7 +103,7 @@ const FuelConsumption = ({ MAF, V, fuel }) => {
     }
   }
   return (
-    <Text style={styles.text}>Consumo de Combustível: {calculateConsume(MAF, V, fuel)}</Text>
+    <Text style={styles.text}>Consumo: {calculateConsume(MAF, V, fuel)} L/Km</Text>
   )
 }
 
