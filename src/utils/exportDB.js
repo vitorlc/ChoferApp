@@ -77,7 +77,7 @@ const myArgs = process.argv.slice(2);
 
   let raceFiltered = Object.values(raceObject.races)
     .filter(race => moment(race.race_start.toDate()).format("DD/MM/YYYY") == moment(myArgs, 'DD/MM/YYYY').format("DD/MM/YYYY"))
-    .sort((a,b) => new Date(b.race_start.toDate()) -  new Date(a.race_start.toDate()))[0]
+    .sort((a,b) => new Date(b.race_start.toDate()) -  new Date(a.race_start.toDate()))[1]
   
   raceFiltered.speed_data.forEach(data => {
     data.date = moment(data.date.toDate()).format("HH:mm:ss")
